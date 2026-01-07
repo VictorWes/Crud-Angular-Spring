@@ -1,0 +1,38 @@
+mat-card {
+  max-width: 80%;
+  margin: 2em auto;
+}
+
+.column-flex {
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+}
+
+.loading-spinner {
+  padding: 65px;
+  background: rgb(212, 210, 210);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+th.mat-header-cell,
+td.mat-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-name {
+  width: 55%;
+}
+
+.col-categoria {
+  width: 30%;
+}
+
+.col-actions {
+  width: 15%;
+  text-align: center;
+}
