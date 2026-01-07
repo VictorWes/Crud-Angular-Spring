@@ -34,4 +34,8 @@ export class CoursesService {
   loadById(id: string) {
     return this.httpCliente.get<Course>(`${this.API}/${id}`);
   }
+
+  delete(id: string) {
+    return this.httpCliente.delete<void>(`${this.API}/${id}`).pipe(first());
+  }
 }
