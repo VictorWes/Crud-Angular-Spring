@@ -1,9 +1,9 @@
-import { Component, Input } from '@angular/core';
-import { Course } from '../model/course';
-import { CoursesService } from '../services/courses.service';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Course } from '../../model/course';
+import { CoursesService } from '../../services/courses.service';
 import { catchError, Observable, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { ErrorDialogComponent } from '../../shared/components/error-dialog/error-dialog.component';
+import { ErrorDialogComponent } from '../../../shared/components/error-dialog/error-dialog.component';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 
 @Component({
@@ -14,11 +14,12 @@ import { ActivatedRoute, Route, Router } from '@angular/router';
 })
 export class CoursesListComponent {
   @Input() courses: Course[] = [];
+  @Output() add = new EventEmitter(false);
   readonly displayedColumns = ['name', 'categoria', 'actions'];
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor() {}
 
   onAdd() {
-    this.router.navigate(['new'], { relativeTo: this.route });
+    this.add.emit(true);
   }
 }

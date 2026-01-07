@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, NonNullableFormBuilder } from '@angular/forms';
-import { CoursesService } from '../services/courses.service';
+import { CoursesService } from '../../services/courses.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Location } from '@angular/common';
 
@@ -25,9 +25,7 @@ export class CourseFormComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-  
-  }
+  ngOnInit(): void {}
 
   private onError() {
     this.snackBar.open('Erro salvar curso', '', { duration: 5000 });
