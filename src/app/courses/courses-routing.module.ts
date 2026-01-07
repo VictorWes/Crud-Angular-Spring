@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CoursesComponent } from './container/courses/courses.component';
 import { CourseFormComponent } from './container/course-form/course-form.component';
+import { courseResolver } from './guards/course.resolver';
 
 const routes: Routes = [
   {
@@ -11,6 +12,11 @@ const routes: Routes = [
   {
     path: 'new',
     component: CourseFormComponent,
+  },
+  {
+    path: 'edit/:id',
+    component: CourseFormComponent,
+    resolve: { course: courseResolver },
   },
 ];
 

@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, NonNullableFormBuilder } from '@angular/forms';
 import { CoursesService } from '../../services/courses.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Location } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { Course } from '../../model/course';
 
 @Component({
   selector: 'app-course-form',
@@ -17,15 +19,26 @@ export class CourseFormComponent implements OnInit {
     private formBuilder: NonNullableFormBuilder,
     private service: CoursesService,
     private snackBar: MatSnackBar,
-    private location: Location
+    private location: Location,
+    private route: ActivatedRoute
   ) {
     this.form = this.formBuilder.group({
+      _id: [''],
       name: [''],
       categoria: [''],
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const course = this.route.snapshot.data['course'] as Course | undefined;
+    if (course) {
+      this.form.setValue({
+        _id: course._id,
+        name: course.name,
+        categoria: course.categoria,
+      });
+    }
+  }
 
   private onError() {
     this.snackBar.open('Erro salvar curso', '', { duration: 5000 });
