@@ -35,7 +35,7 @@ export class CoursesService {
     return this.httpCliente.get<Course>(`${this.API}/${id}`);
   }
 
-  delete(id: string) {
+  remove(id: string) {
     return this.httpCliente.delete<void>(`${this.API}/${id}`).pipe(first());
   }
 }

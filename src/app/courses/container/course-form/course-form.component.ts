@@ -61,4 +61,13 @@ export class CourseFormComponent implements OnInit {
   onCancel() {
     this.location.back();
   }
+
+  onDelete(){
+    this.service.remove(this.form.value._id).subscribe({
+      next: (data) => this.onSucess(),
+      error: () => {
+        this.onError();
+      },
+    });
+  }
 }
