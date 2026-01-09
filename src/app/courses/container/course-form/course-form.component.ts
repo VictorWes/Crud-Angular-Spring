@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Course } from '../../model/course';
+import { Lesson } from '../../model/lesson';
 
 @Component({
   selector: 'app-course-form',
@@ -18,7 +19,7 @@ import { Course } from '../../model/course';
   styleUrl: './course-form.component.scss',
 })
 export class CourseFormComponent implements OnInit {
-  form: FormGroup;
+  form!: FormGroup;
 
   constructor(
     private formBuilder: NonNullableFormBuilder,
@@ -26,34 +27,48 @@ export class CourseFormComponent implements OnInit {
     private snackBar: MatSnackBar,
     private location: Location,
     private route: ActivatedRoute
-  ) {
+  ) {}
+
+  ngOnInit(): void {
+    const course = this.route.snapshot.data['course'] as Course;
     this.form = this.formBuilder.group({
-      _id: [''],
+      _id: [course?._id],
       name: [
-        '',
+        course?.name,
         [
           Validators.required,
           Validators.minLength(3),
           Validators.maxLength(100),
         ],
       ],
-      categoria: ['', [Validators.required]],
+      categoria: [course?.categoria, [Validators.required]],
+      lessons: this.formBuilder.array(this.retrieveLessons(course)),
     });
-  }
-
-  ngOnInit(): void {
-    const course = this.route.snapshot.data['course'] as Course | undefined;
-    if (course) {
-      this.form.setValue({
-        _id: course._id,
-        name: course.name,
-        categoria: course.categoria,
-      });
-    }
+    console.log(this.form.value);
   }
 
   private onError() {
     this.snackBar.open('Erro salvar curso', '', { duration: 5000 });
+  }
+
+  private retrieveLessons(course: Course | undefined) {
+    const lessons = [];
+    if (course?.lessons) {
+      course.lessons.forEach((lesson) => {
+        lessons.push(this.createLesson(lesson));
+      });
+    } else {
+      lessons.push(this.createLesson());
+    }
+    return lessons;
+  }
+
+  private createLesson(lesson: Lesson = { id: '', nome: '', youtubeUrl: '' }) {
+    return this.formBuilder.group({
+      id: [lesson.id],
+      nome: [lesson.nome, [Validators.required]],
+      youtubeUrl: [lesson.youtubeUrl, [Validators.required]],
+    });
   }
 
   onSubmit() {
