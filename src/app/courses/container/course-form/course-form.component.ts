@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, NonNullableFormBuilder } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  NonNullableFormBuilder,
+  Validators,
+} from '@angular/forms';
 import { CoursesService } from '../../services/courses.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Location } from '@angular/common';
@@ -24,8 +29,15 @@ export class CourseFormComponent implements OnInit {
   ) {
     this.form = this.formBuilder.group({
       _id: [''],
-      name: [''],
-      categoria: [''],
+      name: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(100),
+        ],
+      ],
+      categoria: ['', [Validators.required]],
     });
   }
 
@@ -62,12 +74,36 @@ export class CourseFormComponent implements OnInit {
     this.location.back();
   }
 
-  onDelete(){
+  onDelete() {
     this.service.remove(this.form.value._id).subscribe({
       next: (data) => this.onSucess(),
       error: () => {
         this.onError();
       },
     });
+  }
+
+  getErroMessage(fieldName: string) {
+    const field = this.form.get(fieldName);
+
+    if (field?.hasError('required')) {
+      return 'Você deve informar um valor.';
+    }
+
+    if (field?.hasError('minlength')) {
+      const requiredLength = field.errors
+        ? field.errors['minlength']['requiredLength']
+        : 3;
+      return `O valor deve ter no mínimo ${requiredLength} caracteres.`;
+    }
+
+    if (field?.hasError('maxlength')) {
+      const requiredLength = field.errors
+        ? field.errors['maxlength']['requiredLength']
+        : 100;
+      return `O valor deve ter no máximo ${requiredLength} caracteres.`;
+    }
+
+    return 'Campo invalido';
   }
 }
