@@ -3,6 +3,7 @@ import {
   FormBuilder,
   FormGroup,
   NonNullableFormBuilder,
+  UntypedFormArray,
   Validators,
 } from '@angular/forms';
 import { CoursesService } from '../../services/courses.service';
@@ -42,7 +43,10 @@ export class CourseFormComponent implements OnInit {
         ],
       ],
       categoria: [course?.categoria, [Validators.required]],
-      lessons: this.formBuilder.array(this.retrieveLessons(course)),
+      lessons: this.formBuilder.array(
+        this.retrieveLessons(course),
+        Validators.required
+      ),
     });
     console.log(this.form.value);
   }
@@ -65,19 +69,32 @@ export class CourseFormComponent implements OnInit {
 
   private createLesson(lesson: Lesson = { id: '', nome: '', youtubeUrl: '' }) {
     return this.formBuilder.group({
-      id: [lesson.id],
-      nome: [lesson.nome, [Validators.required]],
-      youtubeUrl: [lesson.youtubeUrl, [Validators.required]],
+      id: [lesson.id, Validators.required],
+      nome: [lesson.nome, Validators.minLength(3)],
+      youtubeUrl: [lesson.youtubeUrl, Validators.minLength(10)],
     });
   }
 
+  getLeassonsFormArray() {
+    return (<UntypedFormArray>this.form.get('lessons')).controls;
+  }
+
+  addNewLesson() {
+    const lessons = this.form.get('lessons') as UntypedFormArray;
+    lessons.push(this.createLesson());
+  }
+
   onSubmit() {
-    this.service.save(this.form.value).subscribe({
-      next: (data) => this.onSucess(),
-      error: () => {
-        this.onError();
-      },
-    });
+    if (this.form.valid) {
+      this.service.save(this.form.value).subscribe({
+        next: (data) => this.onSucess(),
+        error: () => {
+          this.onError();
+        },
+      });
+    } else {
+      alert('Formulário inválido');
+    }
   }
 
   private onSucess() {
@@ -120,5 +137,10 @@ export class CourseFormComponent implements OnInit {
     }
 
     return 'Campo invalido';
+  }
+
+  isFormArrayRequired() {
+    const lessons = this.form.get('lessons') as UntypedFormArray;
+    return !lessons.valid && lessons.hasError('required');
   }
 }
