@@ -12,6 +12,7 @@ import { Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Course } from '../../model/course';
 import { Lesson } from '../../model/lesson';
+import { FormUtilsService } from '../../../shared/form/form-utils.service';
 
 @Component({
   selector: 'app-course-form',
@@ -21,13 +22,15 @@ import { Lesson } from '../../model/lesson';
 })
 export class CourseFormComponent implements OnInit {
   form!: FormGroup;
+  formSubmitted = false;
 
   constructor(
     private formBuilder: NonNullableFormBuilder,
     private service: CoursesService,
     private snackBar: MatSnackBar,
     private location: Location,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public formUtils: FormUtilsService
   ) {}
 
   ngOnInit(): void {
@@ -69,9 +72,12 @@ export class CourseFormComponent implements OnInit {
 
   private createLesson(lesson: Lesson = { id: '', nome: '', youtubeUrl: '' }) {
     return this.formBuilder.group({
-      id: [lesson.id, Validators.required],
-      nome: [lesson.nome, Validators.minLength(3)],
-      youtubeUrl: [lesson.youtubeUrl, Validators.minLength(10)],
+      id: [lesson.id],
+      nome: [lesson.nome, [Validators.required, Validators.minLength(3)]],
+      youtubeUrl: [
+        lesson.youtubeUrl,
+        [Validators.required, Validators.minLength(10)],
+      ],
     });
   }
 
@@ -90,15 +96,40 @@ export class CourseFormComponent implements OnInit {
   }
 
   onSubmit() {
+    this.formSubmitted = true;
+
     if (this.form.valid) {
-      this.service.save(this.form.value).subscribe({
+      const formData = { ...this.form.value };
+      // Limpar IDs vazios das lessons
+      if (formData.lessons) {
+        formData.lessons = formData.lessons.map((lesson: any) => {
+          const cleanLesson = { ...lesson };
+          if (!cleanLesson.id || cleanLesson.id === '') {
+            delete cleanLesson.id;
+          }
+          return cleanLesson;
+        });
+      }
+      console.log(
+        'Dados sendo enviados para o backend:',
+        JSON.stringify(formData, null, 2)
+      );
+      this.service.save(formData).subscribe({
         next: (data) => this.onSucess(),
-        error: () => {
+        error: (error) => {
+          console.error('Erro do servidor:', error);
+          console.error('Mensagem de erro:', error.error?.message);
+          console.error('Detalhes:', error.error);
           this.onError();
         },
       });
     } else {
-      alert('Formulário inválido');
+      this.formUtils.valdiateAllFormFields(this.form);
+      this.snackBar.open(
+        'Por favor, preencha todos os campos obrigatórios',
+        '',
+        { duration: 5000 }
+      );
     }
   }
 
@@ -118,34 +149,5 @@ export class CourseFormComponent implements OnInit {
         this.onError();
       },
     });
-  }
-
-  getErroMessage(fieldName: string) {
-    const field = this.form.get(fieldName);
-
-    if (field?.hasError('required')) {
-      return 'Você deve informar um valor.';
-    }
-
-    if (field?.hasError('minlength')) {
-      const requiredLength = field.errors
-        ? field.errors['minlength']['requiredLength']
-        : 3;
-      return `O valor deve ter no mínimo ${requiredLength} caracteres.`;
-    }
-
-    if (field?.hasError('maxlength')) {
-      const requiredLength = field.errors
-        ? field.errors['maxlength']['requiredLength']
-        : 100;
-      return `O valor deve ter no máximo ${requiredLength} caracteres.`;
-    }
-
-    return 'Campo invalido';
-  }
-
-  isFormArrayRequired() {
-    const lessons = this.form.get('lessons') as UntypedFormArray;
-    return !lessons.valid && lessons.hasError('required');
   }
 }
